@@ -13,13 +13,11 @@ MARROM = (139, 69, 19)
 
 fps = pygame.time.Clock()
 fonte_ui = pygame.font.SysFont("Arial", 25)
-fonte_grande = pygame.font.SysFont("Arial", 50)
-
-
+fonte_grande = pygame.font.SysFont("Arial", 50) 
 
 class Gnomo:
     def __init__(self):
-        self.pos = pygame.Vector2(LARGURA // 2, ALTURA - 60)
+        self.pos = pygame.Vector2(LARGURA // 2, ALTURA - 60) # Definição da posição como um vetor
         self.vel = 8
         self.tamanho = 10
 
@@ -64,7 +62,7 @@ class Jogo:
     def resetar(self):
         self.gnomo = Gnomo()
         self.tiros = []
-        self.centopeia = [Segmento(30 * i, 60, 1) for i in range(10)]
+        self.corpo = [Segmento(30 * i, 60, 1) for i in range(10)]
         self.cogumelos = [pygame.Vector2(random.randrange(40, 580, 20), random.randrange(120, 600, 20)) for _ in range(20)]
         
         self.tempo_limite = 15
@@ -88,7 +86,7 @@ class Jogo:
         if self.estado != "JOGANDO": return
 
       
-        if len(self.centopeia) == 0:
+        if len(self.corpo) == 0:
             tempo_atual_fase = (pygame.time.get_ticks() - self.tempo_inicio) // 1000   
             self.tempo_vitoria = self.tempo_acumulado + tempo_atual_fase
             self.estado = "VITORIA"
@@ -101,7 +99,7 @@ class Jogo:
         if restante <= 0:
             if not self.inimigo_dividido:
               
-                self.centopeia.extend([Segmento(30 * i, 100, -1) for i in range(10)])
+                self.corpo.extend([Segmento(30 * i, 100, -1) for i in range(10)])
                 self.inimigo_dividido = True
                 self.tempo_acumulado = 20
                 self.tempo_limite = 10 
@@ -109,9 +107,9 @@ class Jogo:
             else:
                 self.estado = "GAMEOVER"
 
-        for seg in self.centopeia:
+        for seg in self.corpo:
             seg.mover()
-            if seg.pos.x > LARGURA - 15 or seg.pos.x < 15:
+            if seg.pos.x > LARGURA - 15 or seg.pos.x <  15:
                 seg.direcao *= -1
                 seg.pos.y += 25
             
@@ -120,11 +118,11 @@ class Jogo:
 
         for t in self.tiros[:]:
 
-            for seg in self.centopeia[:]:
+            for seg in self.corpo[:]:
 
-                if t.pos.distance_to(seg.pos) < 15:
+                if t.pos.distance_to(seg.pos) < 20: # Cálculo de colisão usando distância vetorial
 
-                    self.centopeia.remove(seg)
+                    self.corpo.remove(seg)
 
                     if t in self.tiros: self.tiros.remove(t)
                     break
@@ -137,7 +135,7 @@ class Jogo:
 
                 self.tiros.remove(t)
 
-        for seg in self.centopeia:
+        for seg in self.corpo:
             seg.mover()
            
             colidiu_cogumelo = False
@@ -159,21 +157,21 @@ class Jogo:
         for t in self.tiros[:]:
             colidiu = False
 
-            for i, seg in enumerate(self.centopeia):
+            for i, seg in enumerate(self.corpo):
                 if t.pos.distance_to(seg.pos) < 20:
                  
-                    for posterior in self.centopeia[i+1:]:
+                    for posterior in self.corpo[i+1:]:
                         posterior.direcao *= -1
                         posterior.pos.y += 10 
                     
-                    self.centopeia.remove(seg)
+                    self.corpo.remove(seg)
                     colidiu = True
                     break
             if colidiu:
                 self.tiros.remove(t)
 
 
-    def renderizar(self):
+    def desenhos(self):
         tela.fill(PRETO)
         desenhar_grade()
         
@@ -185,14 +183,14 @@ class Jogo:
             tela.blit(txt_timer, (LARGURA - 160, 20))
             
             if self.inimigo_dividido:
-                txt_aviso = fonte_ui.render("20s EXTRAS", True, VERMELHO)
+                txt_aviso = fonte_ui.render("10 s EXTRAS", True, VERMELHO)
                 tela.blit(txt_aviso, (LARGURA//2 - 120, 20))
 
         for cog in self.cogumelos:
             pygame.draw.circle(tela, AMARELO, (int(cog.x), int(cog.y)), 10) 
             pygame.draw.rect(tela, VERMELHO, (cog.x-3, cog.y+5, 6, 8))
             
-        for seg in self.centopeia:
+        for seg in self.corpo:
             pygame.draw.circle(tela,  VERDE, (int(seg.pos.x), int(seg.pos.y)), 12)
         
         for t in self.tiros: t.desenhar(tela)
@@ -246,9 +244,9 @@ def main():
             gerenciador.gnomo.mover(teclas)
         
         gerenciador.atualizar()
-        gerenciador.renderizar()
+        gerenciador.desenhos()
         pygame.display.flip()
         fps.tick(60)
 
 if __name__ == "__main__":
-    main()
+    main()  
